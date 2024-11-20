@@ -1,3 +1,7 @@
+function usleep(microseconds) {
+  sleep(microseconds);
+}
+
 // Define functions for touch actions (coordinates might need adjustment)
 function touchDown(id, x, y) {
   click(x, y);
