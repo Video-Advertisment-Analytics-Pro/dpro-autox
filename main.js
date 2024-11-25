@@ -7,6 +7,11 @@ function launchApp(packageName) {
     waitForPackage(packageName, 5000);
 }
 
+/**
+ * パッケージ名を指定し、アプリを強制停止する
+ * @param {string} packageName パッケージ名
+ * @returns
+ */
 function killApp(packageName) {
     var name = getPackageName(packageName);
     if (!name) {
