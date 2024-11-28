@@ -29,10 +29,8 @@ function killApp(packageName) {
         sleep(1000);
         text("強制停止する").findOne().click();
         sleep(1000);
-        back();
+        home();
         sleep(1000);
-    } else {
-        back();
     }
 }
 
@@ -69,16 +67,14 @@ function clickFeedCta() {
 function openAdWebViewAndClose() {
     clickFeedCta();
     sleep(5000);
-    for (let i = 0; i < 5; i++) {
-        scrollDown();
-    }
-    if (id("ig_browser_close_button").findOnce()) {
-        closeWebView();
-    } else if (id("action_bar_button_back").findOnce()) {
-        clickById("action_bar_button_back");
-    } else {
-        throw new Error("Unknown screen");
-    }
+    // for (let i = 0; i < 5; i++) {
+    //     scrollDown();
+    // }
+    // if (id("ig_browser_close_button").findOnce()) {
+    //     closeWebView();
+    // } else if (id("action_bar_button_back").findOnce()) {
+    //     clickById("action_bar_button_back");
+    // }
 }
 
 function restart() {
@@ -88,28 +84,103 @@ function restart() {
     main();
 }
 
-function main() {
-    console.log("Start");
-    launchApp("com.instagram.android");
+// // 単一の実行単位としてのmain関数
+// function main() {
+//     console.log("Start");
+//     launchApp("com.instagram.android");
 
-    for (let i = 0; i < 50; i++) {
+//     const startTime = new Date().getTime();
+//     let feedCounter = 0;
+
+//     for (let i = 0; i < 50; i++) {
+//         try {
+//             const currentTime = new Date().getTime();
+//             if (currentTime - startTime >= 180000) {
+//                 console.log("3分経過したため、終了します");
+//                 break;
+//             }
+
+//             let feed = id("row_feed_cta_wrapper").findOnce();
+//             if (feed) {
+//                 feedCounter++;
+//                 if (feedCounter % 3 === 0) {
+//                     openAdWebViewAndClose();
+//                     break;
+//                 }
+//             }
+
+//             scrollDown();
+//             sleep(1000);
+//         } catch (error) {
+//             console.log("エラーが発生しました:", error);
+//         }
+//     }
+
+//     restart();
+// }
+
+function mainLoop() {
+    while (true) {
         try {
+            main();
+        } catch (error) {
+            console.log("エラーが発生しました:", error);
+        }
+
+        // アプリを終了して再起動
+        killApp("com.instagram.android");
+        sleep(5000);
+    }
+}
+
+// 定数の定義
+const WORK_INTERVAL_MINUTES = 15; // 作業間隔（分）
+const BREAK_DURATION_MINUTES = 10; // 休憩時間（分）
+
+function main() {
+    // 最初の休憩時間を設定
+    let nextBreakTime =
+        new Date().getTime() + WORK_INTERVAL_MINUTES * 60 * 1000;
+
+    while (true) {
+        const currentTime = new Date().getTime();
+
+        // 休憩時間になったかチェック
+        if (currentTime >= nextBreakTime) {
+            console.log(`${BREAK_DURATION_MINUTES}分間休憩します。`);
+            sleep(BREAK_DURATION_MINUTES * 60 * 1000); // 休憩
+
+            // 次の休憩時間を設定（現在時刻から指定時間後）
+            nextBreakTime =
+                new Date().getTime() + WORK_INTERVAL_MINUTES * 60 * 1000;
+            continue;
+        }
+
+        console.log("Start");
+        launchApp("com.instagram.android");
+
+        let feedCounter = 0;
+
+        for (let i = 0; i < 50; i++) {
             let feed = id("row_feed_cta_wrapper").findOnce();
             if (feed) {
-                openAdWebViewAndClose();
-                sleep(3000);
-                scrollDown();
-            }
+                feedCounter++;
 
+                if (feedCounter % 3 === 0) {
+                    clickFeedCta();
+                    sleep(5000);
+                    back();
+                    sleep(1000);
+                }
+            }
             scrollDown();
             sleep(1000);
-        } catch (error) {
-            restart();
         }
-        console.log("count", i);
-    }
 
-    restart();
+        // アプリを終了して再起動
+        killApp("com.instagram.android");
+        sleep(5000);
+    }
 }
 
 main();
